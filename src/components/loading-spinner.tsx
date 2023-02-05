@@ -11,6 +11,7 @@ export const LoadingSpinner = () => (
       backgroundColor: "rgba(255, 255, 255, 0.5)",
       display: "grid",
       placeContent: "center",
+      zIndex: 5,
     }}
   >
     <CircularProgress color="primary" size={60} />

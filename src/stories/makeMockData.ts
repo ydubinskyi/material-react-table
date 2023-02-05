@@ -5,7 +5,7 @@ const createRandomUser = () => ({
   firstName: faker.name.firstName(),
   lastName: faker.name.lastName(),
   username: faker.internet.userName(),
-  phone: faker.phone.number('+48 ### ### ###'),
+  phone: faker.phone.number("+48 ### ### ###"),
   email: faker.internet.email(),
   carModel: faker.vehicle.vehicle(),
   city: faker.address.cityName(),
@@ -26,3 +26,5 @@ export const makeData = (length: number = 500): MockUser[] => {
 
   return fakeUsers;
 };
+
+export const getRowId = (row: MockUser) => row.id;

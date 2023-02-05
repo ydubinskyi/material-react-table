@@ -5,26 +5,30 @@ import {
   getCoreRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  ColumnPinningState,
+  RowSelectionState,
 } from "@tanstack/react-table";
 import { Box } from "@mui/material";
 import type { ComponentMeta, Story } from "@storybook/react";
-import { BaseTable } from "../components/table/base-table";
-import { makeData, MockUser } from "./makeMockData";
+import { getRowId, makeData, MockUser } from "./makeMockData";
 import { rowSelectionCol } from "../components/table/row-selection-col";
+import { PinnableTable } from "../components/table/pinnable-table";
 
 const MOCK_DATA: MockUser[] = makeData();
 
-const useExampleTableProps = (data: MockUser[] = [], pending = false, selectable = false) => {
+const useExampleTableProps = (data: MockUser[] = [], pending = false) => {
   const columns = useMemo<ColumnDef<MockUser>[]>(
     () => [
-      ...(selectable ? [rowSelectionCol as ColumnDef<MockUser>] : []),
+      { ...(rowSelectionCol as ColumnDef<MockUser>), enablePinning: true },
       {
         header: "First name",
         accessorKey: "firstName",
+        enablePinning: true,
       },
       {
         header: "Last name",
         accessorKey: "lastName",
+        enablePinning: true,
       },
       {
         header: "Username",
@@ -38,6 +42,7 @@ const useExampleTableProps = (data: MockUser[] = [], pending = false, selectable
         header: "Email",
         accessorKey: "email",
         size: 250,
+        enablePinning: true,
       },
       {
         header: "City",
@@ -57,6 +62,7 @@ const useExampleTableProps = (data: MockUser[] = [], pending = false, selectable
         header: "Birthdate",
         accessorKey: "birthDate",
         cell: ({ row }) => row.original.birthDate.toLocaleDateString(),
+        enablePinning: true,
       },
       {
         header: "Car model",
@@ -77,38 +83,45 @@ const useExampleTableProps = (data: MockUser[] = [], pending = false, selectable
     []
   );
 
-  const [rowSelection, setRowSelection] = useState({});
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [columnPinning, setColumnPinning] = useState<ColumnPinningState>({ left: ["select", "firstName"], right: [] });
 
   const table = useReactTable({
     data: data,
     columns,
+    defaultColumn: {
+      enablePinning: false,
+    },
     state: {
       rowSelection,
+      columnPinning,
     },
-    enableRowSelection: selectable,
-    // // enableRowSelection: row => row.original.age > 18, // or enable row selection conditionally per row
+    enableRowSelection: true,
+    enablePinning: true,
+    getRowId: getRowId,
     onRowSelectionChange: setRowSelection,
+    onColumnPinningChange: setColumnPinning,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
-  return { table, pending, rowSelection };
+  return { table, pending, rowSelection, columnPinning };
 };
 
 export default {
-  title: "Table/Table",
-  component: BaseTable,
-} as ComponentMeta<typeof BaseTable>;
+  title: "Table/Pinnable Table",
+  component: PinnableTable,
+} as ComponentMeta<typeof PinnableTable>;
 
 const Template: Story = (args) => {
-  const { table, pending, rowSelection } = useExampleTableProps(args.data, args.pending, args.selectable);
+  const { table, pending, rowSelection, columnPinning } = useExampleTableProps(args.data, args.pending);
 
   return (
     <Box sx={{ width: "100%" }}>
-      <BaseTable table={table} pending={pending} />
+      <PinnableTable table={table} pending={pending} />
 
-      {args.selectable && <pre>{JSON.stringify({ rowSelection }, null, 2)}</pre>}
+      <pre>{JSON.stringify({ rowSelection, columnPinning }, null, 2)}</pre>
     </Box>
   );
 };
@@ -118,33 +131,8 @@ Default.args = {
   data: MOCK_DATA,
 };
 
-export const Selectable = Template.bind({});
-Selectable.args = {
-  data: MOCK_DATA,
-  selectable: true,
-};
-
-export const NoData = Template.bind({});
-NoData.args = {
+export const Pending = Template.bind({});
+Pending.args = {
   data: [],
-};
-
-export const PendingNoData = Template.bind({});
-PendingNoData.args = {
-  data: [],
-  pending: true,
-};
-
-
-export const PendingSelectable = Template.bind({});
-PendingSelectable.args = {
-  data: [],
-  pending: true,
-  selectable: true,
-};
-
-export const PendingWithData = Template.bind({});
-PendingWithData.args = {
-  data: MOCK_DATA,
   pending: true,
 };
